@@ -246,6 +246,7 @@
   .viewbtn{align-self:flex-start;margin-top:3px;background:var(--accent-soft);color:var(--accent-d);border:0;border-radius:10px;padding:9px 15px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .15s,color .15s}
   .viewbtn:hover{background:var(--accent);color:#fff}
   .dlinks{display:flex;flex-wrap:wrap;gap:10px}
+  .dmeta-cap{font-size:12.5px;color:var(--muted)}
   .viewbtn svg{width:14px;height:14px}
   .pcard-foot{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:auto}
   .wfstat{border:0;border-radius:999px;padding:6px 13px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:box-shadow .15s,background .15s,color .15s;font-family:inherit;white-space:nowrap}
@@ -689,7 +690,7 @@
       <div class="dsection" id="dStepsSec"><div class="dlabel" id="dStepsLabel">Steps</div><p id="dWhy" style="white-space:pre-wrap"></p></div>
       <div class="dsection" id="dInputSec"><div class="dlabel">Input source</div><p id="dTip"></p></div>
       <div class="dsection" id="dLinkWrap"><div class="dlabel">Open</div><div id="dLinks" class="dlinks"></div></div>
-      <div class="dsection"><div class="dlabel">Details</div><div id="dMeta"></div></div>
+      <div class="dsection" id="dDetailsSec"><div class="dlabel">Type</div><div id="dMeta"></div></div>
     </div>
   </aside>
 <script>
@@ -965,9 +966,9 @@ function openDrawer(idx){
   const lw=document.getElementById('dLinkWrap');
   var acts=resActions(p);
   if(acts.length){ lw.style.display=''; document.getElementById('dLinks').innerHTML=acts.map(function(a){ return '<a class="viewbtn" href="'+a.url+'" rel="noopener" onclick="return openExt(event,\''+a.url+'\')">'+esc(a.label)+' →</a>'; }).join(''); } else lw.style.display='none';
-  const chips=['<span class="dchip dchip-muted">'+esc(LEVELS[p.lvl].name)+'</span>'];
-  if(p.tool){ chips.push('<span class="dchip dchip-muted">'+esc(p.tool)+'</span>'); }
-  document.getElementById('dMeta').innerHTML=chips.join('');
+  var dds=document.getElementById('dDetailsSec');
+  if(p.tool){ dds.style.display=''; document.getElementById('dMeta').innerHTML='<span class="dmeta-cap">'+esc(p.tool)+'</span>'; }
+  else { dds.style.display='none'; }
   var _cs=getStatus(p.lvl,p.n,p.status);
   var _st=document.getElementById('dStatusTop');
   _st.className='wfstat '+statusClass(_cs); _st.textContent=_cs; _st.setAttribute('data-wfk',p.lvl+'-'+p.n); _st.setAttribute('aria-label','Status: '+_cs+'. Click to change.');
