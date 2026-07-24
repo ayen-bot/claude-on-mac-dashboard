@@ -247,6 +247,8 @@
   .viewbtn:hover{background:var(--accent);color:#fff}
   .dlinks{display:flex;flex-wrap:wrap;gap:10px}
   .dmeta-cap{font-size:12.5px;color:var(--muted)}
+  .viewbtn.vb-off{background:#eef1f4;color:#9aa4af;cursor:not-allowed;pointer-events:none}
+  [data-theme="dark"] .viewbtn.vb-off{background:#2a3038;color:#6b7683}
   .viewbtn svg{width:14px;height:14px}
   .pcard-foot{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:auto}
   .wfstat{border:0;border-radius:999px;padding:6px 13px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:box-shadow .15s,background .15s,color .15s;font-family:inherit;white-space:nowrap}
@@ -733,6 +735,10 @@ function openExt(ev,url){ if(ev&&ev.preventDefault){ ev.preventDefault(); } if(!
    "Watch video" button, articles get "Read article", etc. Items that are both an
    article and a video (some creator posts) get two separate buttons. */
 function resActions(p){ if(!p.link) return []; var t=(p.tool||'').toLowerCase(); var hasV=t.indexOf('video')>=0, hasA=t.indexOf('article')>=0, hasC=t.indexOf('course')>=0, hasTut=t.indexOf('tutorial')>=0, hasUse=t.indexOf('use case')>=0, hasPage=(t.indexOf('page')>=0||t.indexOf('hub')>=0); var labels; if(hasV&&hasA) labels=['Watch video','Read article']; else if(hasV) labels=['Watch video']; else if(hasC) labels=['Open course']; else if(hasA||hasTut||hasUse) labels=['Read article']; else if(hasPage) labels=['Open page']; else labels=['Open link']; return labels.map(function(l){ return {label:l, url:(l==='Watch video'&&p.video)?p.video:p.link}; }); }
+/* Resolve the video URL and the article/read URL for a resource item. Video comes
+   from a dedicated p.video, or from p.link when the item itself is a video. Article
+   is p.link unless the item is video-only (then null -> greyed-out button). */
+function resMedia(p){ var t=(p.tool||'').toLowerCase(); var toolHasVideo=t.indexOf('video')>=0; var video=p.video||(toolHasVideo?p.link:null); var readable=(t.indexOf('article')>=0||t.indexOf('page')>=0||t.indexOf('course')>=0||t.indexOf('use case')>=0||t.indexOf('tutorial')>=0||t.indexOf('hub')>=0||t.indexOf('learning')>=0); var videoOnly=toolHasVideo&&!p.video&&!readable; var article=videoOnly?null:p.link; return {video:video, article:article}; }
 /* ===== Workflow status (In Progress / Done / Not Started), saved per browser ===== */
 let WFSTAT;
 try{ WFSTAT=JSON.parse(localStorage.getItem('claudeMacStatus')||'{}')||{}; }catch(e){ WFSTAT={}; }
@@ -964,8 +970,10 @@ function openDrawer(idx){
   const is=document.getElementById('dInputSec');
   if(p.tip){is.style.display='';document.getElementById('dTip').textContent=p.tip;}else is.style.display='none';
   const lw=document.getElementById('dLinkWrap');
-  var acts=resActions(p);
-  if(acts.length){ lw.style.display=''; document.getElementById('dLinks').innerHTML=acts.map(function(a){ return '<a class="viewbtn" href="'+a.url+'" rel="noopener" onclick="return openExt(event,\''+a.url+'\')">'+esc(a.label)+' →</a>'; }).join(''); } else lw.style.display='none';
+  function _btn(label,url,offTitle){ return url ? '<a class="viewbtn" href="'+url+'" rel="noopener" onclick="return openExt(event,\''+url+'\')">'+label+' →</a>' : '<span class="viewbtn vb-off" aria-disabled="true" title="'+offTitle+'">'+label+'</span>'; }
+  if(p.lvl==='5'){ var m=resMedia(p); lw.style.display=''; document.getElementById('dLinks').innerHTML=_btn('Watch video',m.video,'Video not available for this resource')+_btn('Read article',m.article,'No written article for this resource'); }
+  else if(p.link){ lw.style.display=''; document.getElementById('dLinks').innerHTML='<a class="viewbtn" href="'+p.link+'" rel="noopener" onclick="return openExt(event,\''+p.link+'\')">Open link →</a>'; }
+  else lw.style.display='none';
   var dds=document.getElementById('dDetailsSec');
   if(p.tool){ dds.style.display=''; document.getElementById('dMeta').innerHTML='<span class="dmeta-cap">'+esc(p.tool)+'</span>'; }
   else { dds.style.display='none'; }
